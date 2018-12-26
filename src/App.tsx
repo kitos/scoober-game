@@ -1,5 +1,7 @@
 import * as React from 'react'
 import styled, { createGlobalStyle, ThemeProvider } from 'styled-components'
+import { Box, Flex } from '@rebass/grid'
+import { ActionBar } from './components/action-bar'
 
 let colors = {
   blue: '#65A9D8'
@@ -8,9 +10,10 @@ let colors = {
 let theme = { colors }
 
 let GlobalStyle = createGlobalStyle`
-  html, body {
+  html, body, #root {
     margin: 0;
     padding: 0;
+    height: 100%;
   }
 `
 
@@ -30,11 +33,24 @@ let App = () => (
     <>
       <GlobalStyle />
 
-      <Header>
-        <AppName>Scoober team</AppName>
+      <Flex
+        flexDirection="column"
+        css={`
+          height: 100%;
+        `}
+      >
+        <Header>
+          <AppName>Scoober team</AppName>
 
-        <div>Win the game or win the job</div>
-      </Header>
+          <div>Win the game or win the job</div>
+        </Header>
+
+        <Box as="main" flex="1" p="20px">
+          messages could be here...
+        </Box>
+
+        <ActionBar />
+      </Flex>
     </>
   </ThemeProvider>
 )
