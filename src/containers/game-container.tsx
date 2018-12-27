@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useReducer } from 'react'
 import { Box, Flex } from '@rebass/grid'
+import { Transition } from 'react-spring'
 import { last } from 'ramda'
 
 import ActionButton from '../components/action-button'
@@ -76,7 +77,6 @@ let EndGameCover = styled.div`
   bottom: 0;
   right: 0;
   background: ${({ theme }) => theme.colors.blue};
-  opacity: 0.8;
   color: #fff;
   font-size: 64px;
   font-weight: bold;
@@ -84,20 +84,34 @@ let EndGameCover = styled.div`
 
 let EndGame = ({ status }: { status: IGameStatus }) =>
   status === 'progress' ? null : (
-    <Flex
-      as={EndGameCover}
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
+    <Transition
+      items={status}
+      from={{ opacity: 0, transform: 'scale(0.2)' }}
+      enter={{ opacity: 0.8, transform: 'scale(1)' }}
+      leave={{ opacity: 0, transform: 'scale(0.2)' }}
     >
-      <Box mb={20}>
-        <img
-          src={`/img/${status}.png`}
-          srcSet={`/img/${status}.png, /img/${status}@2x.png 2x, /img/${status}@3x.png 3x`}
-        />
-      </Box>
-      {status === 'won' ? 'You won!' : 'You lose :-('}
-    </Flex>
+      {() => ({ opacity, transform }) => (
+        <Flex
+          as={EndGameCover}
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          style={{ opacity }}
+        >
+          <Box mb={20}>
+            <img
+              style={{ transform }}
+              src={`/img/${status}.png`}
+              srcSet={`/img/${status}.png, /img/${status}@2x.png 2x, /img/${status}@3x.png 3x`}
+            />
+          </Box>
+
+          <span style={{ transform }}>
+            {status === 'won' ? 'You won!' : 'You lose :-('}
+          </span>
+        </Flex>
+      )}
+    </Transition>
   )
 
 let GameContainer = ({ className }: { className: string }) => {
