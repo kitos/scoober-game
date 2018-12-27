@@ -6,6 +6,7 @@ import { last } from 'ramda'
 import ActionButton from '../components/action-button'
 import Operation from '../components/operation'
 import ActionList from '../components/action-list'
+import styled from 'styled-components'
 
 export type IOperation = '-' | '0' | '+'
 type Issuer = 'me' | 'opponent'
@@ -68,6 +69,37 @@ let reducer = (state: IState, action: IAction): IState => {
   }
 }
 
+let EndGameCover = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: ${({ theme }) => theme.colors.blue};
+  opacity: 0.8;
+  color: #fff;
+  font-size: 64px;
+  font-weight: bold;
+`
+
+let EndGame = ({ status }: { status: IGameStatus }) =>
+  status === 'progress' ? null : (
+    <Flex
+      as={EndGameCover}
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+    >
+      <Box mb={20}>
+        <img
+          src={`/img/${status}.png`}
+          srcSet={`/img/${status}.png, /img/${status}@2x.png 2x, /img/${status}@3x.png 3x`}
+        />
+      </Box>
+      {status === 'won' ? 'You won!' : 'You lose :-('}
+    </Flex>
+  )
+
 let GameContainer = ({ className }: { className: string }) => {
   let [{ seed, status, actions }, dispatch] = useReducer(
     reducer,
@@ -76,7 +108,13 @@ let GameContainer = ({ className }: { className: string }) => {
   )
 
   return (
-    <Flex flexDirection="column" className={className}>
+    <Flex
+      flexDirection="column"
+      className={className}
+      css={`
+        position: relative;
+      `}
+    >
       <Box
         flex={1}
         mb={20}
@@ -84,16 +122,20 @@ let GameContainer = ({ className }: { className: string }) => {
           overflow: auto;
         `}
       >
-        {status === 'progress' ? <ActionList {...{ actions, seed }} /> : status}
+        <ActionList {...{ actions, seed }} />
       </Box>
 
-      <Flex justifyContent="space-between">
-        {(['-', '0', '+'] as IOperation[]).map(o => (
-          <ActionButton onClick={() => dispatch({ type: o })}>
-            <Operation value={o} />
-          </ActionButton>
-        ))}
-      </Flex>
+      <EndGame status={status} />
+
+      {status === 'progress' && (
+        <Flex justifyContent="space-between">
+          {(['-', '0', '+'] as IOperation[]).map(o => (
+            <ActionButton onClick={() => dispatch({ type: o })}>
+              <Operation value={o} />
+            </ActionButton>
+          ))}
+        </Flex>
+      )}
     </Flex>
   )
 }
