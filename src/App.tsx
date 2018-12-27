@@ -1,7 +1,8 @@
 import * as React from 'react'
 import styled, { createGlobalStyle, ThemeProvider } from 'styled-components'
 import { Box, Flex } from '@rebass/grid'
-import { ActionBar } from './components/action-bar'
+
+import GameContainer from './containers/game-container'
 
 let colors = {
   blue: '#65A9D8'
@@ -10,9 +11,17 @@ let colors = {
 let theme = { colors }
 
 let GlobalStyle = createGlobalStyle`
-  html, body, #root {
+  body {
     margin: 0;
     padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html, body, #root {
     height: 100%;
   }
 `
@@ -37,6 +46,7 @@ let App = () => (
         flexDirection="column"
         css={`
           height: 100%;
+          background: #f5f7fa;
         `}
       >
         <Header>
@@ -45,11 +55,7 @@ let App = () => (
           <div>Win the game or win the job</div>
         </Header>
 
-        <Box as="main" flex="1" p="20px">
-          messages could be here...
-        </Box>
-
-        <ActionBar />
+        <Box as={GameContainer} p="20px" flex={1} />
       </Flex>
     </>
   </ThemeProvider>
