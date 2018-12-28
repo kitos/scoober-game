@@ -50,7 +50,19 @@ export let EndGame = ({
             {status === 'won' ? 'You won!' : 'You lose :-('}
           </Box>
 
-          <WhiteButton onClick={onReStart}>New game</WhiteButton>
+          <Transition
+            items={1}
+            trail={500}
+            from={{ transform: 'translateY(300px)' }}
+            enter={{ transform: 'translateY(0)' }}
+            leave={{ transform: 'translateY(300px)' }}
+          >
+            {() => style => (
+              <WhiteButton style={style} onClick={onReStart}>
+                New game
+              </WhiteButton>
+            )}
+          </Transition>
         </Flex>
       )}
     </Transition>
