@@ -40,8 +40,8 @@ export let applyOperation = (a: IOperation, seed: number) => {
   return Math.round(seed / 3)
 }
 
-export let calculateResult = (seed: number, messages: IGameAction[]) =>
-  messages.reduce((res, m) => applyOperation(m.operation, res), seed)
+export let calculateResult = (seed: number, actions: IGameAction[]) =>
+  actions.reduce((res, m) => applyOperation(m.operation, res), seed)
 
 let reducer = (state: IState, action: IAction): IState => {
   switch (action.type) {
@@ -110,6 +110,7 @@ let GameContainer = ({ className }: { className: string }) => {
         <Flex justifyContent="space-between">
           {operations.map(o => (
             <ActionButton
+              key={o}
               disabled={!lastOperation || lastOperation.from === 'me'}
               onClick={() => {
                 dispatch({

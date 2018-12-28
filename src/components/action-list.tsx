@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useRef } from 'react'
 import styled from 'styled-components'
 import { Box, Flex } from '@rebass/grid'
 import { Transition } from 'react-spring'
@@ -26,68 +27,81 @@ let ActionList = ({
 }: {
   actions: IGameAction[]
   seed: number
-}) => (
-  <Flex
-    as="ul"
-    flexDirection="column"
-    m={0}
-    p={0}
-    css={`
-      list-style: none;
-    `}
-  >
-    <Transition
-      items={actions.map((a, i) => ({
-        ...a,
-        id: i,
-        prevResult: calculateResult(seed, actions.slice(0, i)),
-        result: calculateResult(seed, actions.slice(0, i + 1))
-      }))}
-      keys={({ id }) => id}
-      from={translateX}
-      enter={{ transform: 'translateX(0)' }}
-      leave={translateX}
-    >
-      {action => style => (
-        <Flex
-          as="li"
-          flexDirection={action.from === 'me' ? 'row' : 'row-reverse'}
-          style={style}
-        >
-          <Box m={action.from === 'me' ? '0 20px 0' : '0 0 0 20px'}>
-            <Circle background="gray" size="60px">
-              <ResponsiveImage
-                name={action.from === 'me' ? 'avatar' : 'opponent'}
-              />
-            </Circle>
-          </Box>
+}) => {
+  let lastActionRef = useRef<HTMLDivElement>(null)
 
+  return (
+    <Flex
+      as="ul"
+      flexDirection="column"
+      m={0}
+      p={0}
+      css={`
+        list-style: none;
+      `}
+    >
+      <Transition
+        items={actions.map((a, i) => ({
+          ...a,
+          id: i,
+          prevResult: calculateResult(seed, actions.slice(0, i)),
+          result: calculateResult(seed, actions.slice(0, i + 1)),
+          isLast: i === actions.length - 1
+        }))}
+        keys={({ id }) => id}
+        from={translateX}
+        enter={{ transform: 'translateX(0)' }}
+        leave={translateX}
+        onRest={() => {
+          let $lastAction = lastActionRef.current
+          if ($lastAction) {
+            $lastAction.scrollIntoView({ behavior: 'smooth' })
+          }
+        }}
+      >
+        {action => style => (
           <Flex
-            flexDirection="column"
-            alignItems={action.from === 'me' ? 'flex-start' : 'flex-end'}
-            mb={20}
+            as="li"
+            flexDirection={action.from === 'me' ? 'row' : 'row-reverse'}
+            style={style}
           >
-            <Box as={Circle} mb={10}>
-              <Operation value={action.operation} />
+            <Box m={action.from === 'me' ? '0 20px 0' : '0 0 0 20px'}>
+              <Circle background="gray" size="60px">
+                <ResponsiveImage
+                  name={action.from === 'me' ? 'avatar' : 'opponent'}
+                />
+              </Circle>
             </Box>
 
-            <TextMsg>
-              [({action.prevResult}
-              {action.operation === '0'
-                ? ''
-                : action.operation === '-'
-                ? ' - 1'
-                : ' + 1'}
-              ) / 3] = {action.result}
-            </TextMsg>
+            <Flex
+              flexDirection="column"
+              alignItems={action.from === 'me' ? 'flex-start' : 'flex-end'}
+              mb={20}
+            >
+              <Box as={Circle} mb={10}>
+                <Operation value={action.operation} />
+              </Box>
 
-            <TextMsg>{action.result}</TextMsg>
+              <TextMsg>
+                [({action.prevResult}
+                {action.operation === '0'
+                  ? ''
+                  : action.operation === '-'
+                  ? ' - 1'
+                  : ' + 1'}
+                ) / 3] = {action.result}
+              </TextMsg>
+
+              <TextMsg ref={action.isLast ? lastActionRef : undefined}>
+                {action.result}
+              </TextMsg>
+            </Flex>
           </Flex>
-        </Flex>
-      )}
-    </Transition>
-  </Flex>
-)
+        )}
+      </Transition>
+    </Flex>
+  )
+}
 
 export default ActionList
 export { ActionList }
