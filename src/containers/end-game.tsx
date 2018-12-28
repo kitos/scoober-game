@@ -5,6 +5,7 @@ import { Box, Flex } from '@rebass/grid'
 
 import { IGameStatus } from './game-container'
 import WhiteButton from '../components/white-button'
+import ResponsiveImage from '../components/responsive-image'
 
 let EndGameCover = styled.div`
   position: absolute;
@@ -42,11 +43,7 @@ export let EndGame = ({
           justifyContent="center"
           style={{ opacity }}
         >
-          <img
-            style={{ transform }}
-            src={`/img/${s}.png`}
-            srcSet={`/img/${s}.png, /img/${s}@2x.png 2x, /img/${s}@3x.png 3x`}
-          />
+          <ResponsiveImage name={s} style={{ transform }} />
 
           <Box my={20} style={{ transform }}>
             {s === 'won' ? 'You won!' : 'You lose :-('}

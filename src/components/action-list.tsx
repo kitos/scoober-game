@@ -1,10 +1,11 @@
 import * as React from 'react'
 import styled from 'styled-components'
-import { Flex } from '@rebass/grid'
+import { Box, Flex } from '@rebass/grid'
 
 import { calculateResult, IGameAction } from '../containers/game-container'
 import Operation from './operation'
 import Circle from './circle'
+import ResponsiveImage from './responsive-image'
 
 let TextMsg = styled.p`
   background: #fff;
@@ -35,15 +36,28 @@ let ActionList = ({
         result: calculateResult(seed, actions.slice(0, i + 1))
       }))
       .map((m, i) => (
-        <Flex key={i} as="li" flexDirection="column">
-          <Circle>
-            <Operation value={m.operation} />
-          </Circle>
-          <TextMsg>
-            [({m.prevResult}
-            {m.operation === '0' ? '' : m.operation === '-' ? ' - 1' : ' + 1'})
-            / 3] = {m.result}
-          </TextMsg>
+        <Flex
+          key={i}
+          as="li"
+          flexDirection={m.from === 'me' ? 'row' : 'row-reverse'}
+        >
+          <Box mr={20}>
+            <Circle background="gray" size="60px">
+              <ResponsiveImage name={m.from === 'me' ? 'avatar' : 'opponent'} />
+            </Circle>
+          </Box>
+
+          <Flex flexDirection="column">
+            <Circle>
+              <Operation value={m.operation} />
+            </Circle>
+
+            <TextMsg>
+              [({m.prevResult}
+              {m.operation === '0' ? '' : m.operation === '-' ? ' - 1' : ' + 1'}
+              ) / 3] = {m.result}
+            </TextMsg>
+          </Flex>
         </Flex>
       ))}
   </Flex>

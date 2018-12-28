@@ -1,16 +1,26 @@
 import styled from 'styled-components'
 
-let Circle = styled.div`
-  background: ${({ theme }) => theme.colors.blue};
-  height: 60px;
-  width: 60px;
-  line-height: 60px;
+type Props = {
+  background?: string
+  size?: string
+}
+
+let Circle = styled.div<Props>`
+  background: ${({ background, theme }) => background || theme.colors.blue};
   padding: 10px;
   border-radius: 50%;
-  text-align: center;
   color: #fff;
   font-weight: bold;
   font-size: 26px;
+
+  box-sizing: border-box;
+  ${({ size = '80px' }) => `
+    height: ${size};
+    width: ${size}
+  `};
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `
 
 export default Circle

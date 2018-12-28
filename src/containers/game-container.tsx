@@ -45,7 +45,7 @@ let reducer = (state: IState, action: IAction): IState => {
   switch (action.type) {
     case 'start':
       return {
-        actions: [{ from: 'me', operation: '0' }],
+        actions: [{ from: 'opponent', operation: '0' }],
         seed: Math.round(Math.random() * 100),
         status: 'progress'
       }
