@@ -1,13 +1,12 @@
 import * as React from 'react'
 import { useReducer } from 'react'
 import { Box, Flex } from '@rebass/grid'
-import { Transition } from 'react-spring'
 import { last } from 'ramda'
 
 import ActionButton from '../components/action-button'
 import Operation from '../components/operation'
 import ActionList from '../components/action-list'
-import styled from 'styled-components'
+import { EndGame } from './end-game'
 
 export type IOperation = '-' | '0' | '+'
 type Issuer = 'me' | 'opponent'
@@ -17,7 +16,7 @@ export type IGameAction = {
   operation: IOperation
 }
 
-type IGameStatus = 'progress' | 'won' | 'lose'
+export type IGameStatus = 'progress' | 'won' | 'lose'
 
 type IState = {
   seed: number
@@ -75,65 +74,6 @@ let reducer = (state: IState, action: IAction): IState => {
       return state
   }
 }
-
-let EndGameCover = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  background: ${({ theme }) => theme.colors.blue};
-  color: #fff;
-  font-size: 64px;
-  font-weight: bold;
-`
-
-let EndGame = ({
-  status,
-  onReStart
-}: {
-  status: IGameStatus
-  onReStart: () => void
-}) =>
-  status === 'progress' ? null : (
-    <Transition
-      items={status}
-      from={{ opacity: 0, transform: 'scale(0.2)' }}
-      enter={{ opacity: 0.8, transform: 'scale(1)' }}
-      leave={{ opacity: 0, transform: 'scale(0.2)' }}
-    >
-      {() => ({ opacity, transform }) => (
-        <Flex
-          as={EndGameCover}
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          style={{ opacity }}
-        >
-          <img
-            style={{ transform }}
-            src={`/img/${status}.png`}
-            srcSet={`/img/${status}.png, /img/${status}@2x.png 2x, /img/${status}@3x.png 3x`}
-          />
-
-          <Box my={20} style={{ transform }}>
-            {status === 'won' ? 'You won!' : 'You lose :-('}
-          </Box>
-
-          <WhiteButton onClick={onReStart}>New game</WhiteButton>
-        </Flex>
-      )}
-    </Transition>
-  )
-
-let WhiteButton = styled.button`
-  background: #fff;
-  color: #5189b7;
-  font-size: 24px;
-  font-weight: bold;
-  padding: 20px 64px;
-  border-radius: 35px;
-`
 
 let GameContainer = ({ className }: { className: string }) => {
   let [{ seed, status, actions }, dispatch] = useReducer(
