@@ -11,6 +11,8 @@ import { EndGame } from './end-game'
 export type IOperation = '-' | '0' | '+'
 type Issuer = 'me' | 'opponent'
 
+let operations: IOperation[] = ['-', '0', '+']
+
 export type IGameAction = {
   from: Issuer
   operation: IOperation
@@ -24,7 +26,7 @@ type IState = {
   status: IGameStatus
 }
 
-type IAction = { type: IOperation | 'start' }
+type IAction = { type: 'step'; payload: IGameAction } | { type: 'start' }
 
 export let applyOperation = (a: IOperation, seed: number) => {
   switch (a) {
@@ -49,14 +51,15 @@ let reducer = (state: IState, action: IAction): IState => {
         seed: Math.round(Math.random() * 100),
         status: 'progress'
       }
-    case '-':
-    case '0':
-    case '+':
-      let actions = [
-        ...state.actions,
-        { from: 'me' as Issuer, operation: action.type }
-      ]
-      let result = calculateResult(state.seed, actions)
+    case 'step':
+      let result = calculateResult(state.seed, state.actions)
+
+      if (result <= 1) {
+        return state // game is already over
+      }
+
+      let actions = [...state.actions, action.payload]
+      result = calculateResult(state.seed, actions)
       let lastMessage = last(actions)
       let status: IGameStatus =
         result <= 1
@@ -104,8 +107,24 @@ let GameContainer = ({ className }: { className: string }) => {
 
       {status === 'progress' && (
         <Flex justifyContent="space-between">
-          {(['-', '0', '+'] as IOperation[]).map(o => (
-            <ActionButton onClick={() => dispatch({ type: o })}>
+          {operations.map(o => (
+            <ActionButton
+              onClick={() => {
+                dispatch({
+                  type: 'step',
+                  payload: { from: 'me', operation: o }
+                })
+
+                dispatch({
+                  type: 'step',
+                  payload: {
+                    from: 'opponent',
+                    operation:
+                      operations[Math.floor(Math.random() * operations.length)]
+                  }
+                })
+              }}
+            >
               <Operation value={o} />
             </ActionButton>
           ))}
