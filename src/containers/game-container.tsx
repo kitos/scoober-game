@@ -97,7 +97,8 @@ let GameContainer = ({ className }: { className: string }) => {
         flex={1}
         mb={20}
         css={`
-          overflow: auto;
+          overflow-y: auto;
+          overflow-x: hidden;
         `}
       >
         <ActionList {...{ actions, seed }} />
