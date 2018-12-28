@@ -1,5 +1,5 @@
 import * as React from 'react'
-import styled from 'styled-components'
+import styled, {StyledComponentProps} from 'styled-components'
 
 import Circle from './circle'
 
@@ -18,12 +18,9 @@ let Button = styled.button`
 
 let ActionButton = ({
   children,
-  onClick
-}: {
-  children?: React.ReactNode
-  onClick?: React.MouseEventHandler
-}) => (
-  <Button onClick={onClick}>
+  ...props
+}: StyledComponentProps<'button', any, {}, never>) => (
+  <Button {...props}>
     <Circle>{children}</Circle>
   </Button>
 )

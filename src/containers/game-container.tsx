@@ -48,25 +48,24 @@ let reducer = (state: IState, action: IAction): IState => {
     case 'start':
       return {
         actions: [{ from: 'opponent', operation: '0' }],
-        seed: Math.round(Math.random() * 100),
+        seed: Math.round(100 + Math.random() * 100),
         status: 'progress'
       }
     case 'step':
-      let result = calculateResult(state.seed, state.actions)
+      let { seed, actions } = state
+      let result = calculateResult(seed, actions)
+      let lastAction = last(actions)
+      let newAction = action.payload
 
-      if (result <= 1) {
-        return state // game is already over
+      if (result <= 1 || (lastAction && lastAction.from === newAction.from)) {
+        return state
       }
 
-      let actions = [...state.actions, action.payload]
+      actions = [...state.actions, newAction]
       result = calculateResult(state.seed, actions)
-      let lastMessage = last(actions)
+
       let status: IGameStatus =
-        result <= 1
-          ? lastMessage && lastMessage.from === 'me'
-            ? 'won'
-            : 'lose'
-          : 'progress'
+        result <= 1 ? (newAction.from === 'me' ? 'won' : 'lose') : 'progress'
 
       return {
         ...state,
@@ -84,6 +83,7 @@ let GameContainer = ({ className }: { className: string }) => {
     {} as IState,
     { type: 'start' }
   )
+  let lastOperation = last(actions)
 
   return (
     <Flex
@@ -109,20 +109,27 @@ let GameContainer = ({ className }: { className: string }) => {
         <Flex justifyContent="space-between">
           {operations.map(o => (
             <ActionButton
+              disabled={!lastOperation || lastOperation.from === 'me'}
               onClick={() => {
                 dispatch({
                   type: 'step',
                   payload: { from: 'me', operation: o }
                 })
 
-                dispatch({
-                  type: 'step',
-                  payload: {
-                    from: 'opponent',
-                    operation:
-                      operations[Math.floor(Math.random() * operations.length)]
-                  }
-                })
+                setTimeout(
+                  () =>
+                    dispatch({
+                      type: 'step',
+                      payload: {
+                        from: 'opponent',
+                        operation:
+                          operations[
+                            Math.floor(Math.random() * operations.length)
+                          ]
+                      }
+                    }),
+                  1000
+                )
               }}
             >
               <Operation value={o} />
