@@ -25,7 +25,7 @@ type IState = {
   status: IGameStatus
 }
 
-type IAction = { type: IOperation }
+type IAction = { type: IOperation | 'start' }
 
 export let applyOperation = (a: IOperation, seed: number) => {
   switch (a) {
@@ -44,6 +44,12 @@ export let calculateResult = (seed: number, messages: IGameAction[]) =>
 
 let reducer = (state: IState, action: IAction): IState => {
   switch (action.type) {
+    case 'start':
+      return {
+        actions: [{ from: 'me', operation: '0' }],
+        seed: Math.round(Math.random() * 100),
+        status: 'progress'
+      }
     case '-':
     case '0':
     case '+':
@@ -82,7 +88,13 @@ let EndGameCover = styled.div`
   font-weight: bold;
 `
 
-let EndGame = ({ status }: { status: IGameStatus }) =>
+let EndGame = ({
+  status,
+  onReStart
+}: {
+  status: IGameStatus
+  onReStart: () => void
+}) =>
   status === 'progress' ? null : (
     <Transition
       items={status}
@@ -98,27 +110,36 @@ let EndGame = ({ status }: { status: IGameStatus }) =>
           justifyContent="center"
           style={{ opacity }}
         >
-          <Box mb={20}>
-            <img
-              style={{ transform }}
-              src={`/img/${status}.png`}
-              srcSet={`/img/${status}.png, /img/${status}@2x.png 2x, /img/${status}@3x.png 3x`}
-            />
+          <img
+            style={{ transform }}
+            src={`/img/${status}.png`}
+            srcSet={`/img/${status}.png, /img/${status}@2x.png 2x, /img/${status}@3x.png 3x`}
+          />
+
+          <Box my={20} style={{ transform }}>
+            {status === 'won' ? 'You won!' : 'You lose :-('}
           </Box>
 
-          <span style={{ transform }}>
-            {status === 'won' ? 'You won!' : 'You lose :-('}
-          </span>
+          <WhiteButton onClick={onReStart}>New game</WhiteButton>
         </Flex>
       )}
     </Transition>
   )
 
+let WhiteButton = styled.button`
+  background: #fff;
+  color: #5189b7;
+  font-size: 24px;
+  font-weight: bold;
+  padding: 20px 64px;
+  border-radius: 35px;
+`
+
 let GameContainer = ({ className }: { className: string }) => {
   let [{ seed, status, actions }, dispatch] = useReducer(
     reducer,
-    { actions: [], seed: Math.round(Math.random() * 100), status: 'progress' },
-    { type: '0' }
+    {} as IState,
+    { type: 'start' }
   )
 
   return (
@@ -139,7 +160,7 @@ let GameContainer = ({ className }: { className: string }) => {
         <ActionList {...{ actions, seed }} />
       </Box>
 
-      <EndGame status={status} />
+      <EndGame status={status} onReStart={() => dispatch({ type: 'start' })} />
 
       {status === 'progress' && (
         <Flex justifyContent="space-between">
