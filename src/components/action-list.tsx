@@ -1,6 +1,7 @@
 import * as React from 'react'
 import styled from 'styled-components'
 import { Box, Flex } from '@rebass/grid'
+import { Transition } from 'react-spring'
 
 import { calculateResult, IGameAction } from '../containers/game-container'
 import Operation from './operation'
@@ -12,6 +13,10 @@ let TextMsg = styled.p`
   padding: 10px 20px;
   box-shadow: #e2e2e2 2px 2px 10px;
 `
+
+let translateX = ({ from }: IGameAction): object => ({
+  transform: `translateX(${from === 'me' ? '-100%' : '100%'})`
+})
 
 let ActionList = ({
   actions,
@@ -29,37 +34,50 @@ let ActionList = ({
       list-style: none;
     `}
   >
-    {actions
-      .map((m, i) => ({
-        ...m,
+    <Transition
+      items={actions.map((a, i) => ({
+        ...a,
+        id: i,
         prevResult: calculateResult(seed, actions.slice(0, i)),
         result: calculateResult(seed, actions.slice(0, i + 1))
-      }))
-      .map((m, i) => (
+      }))}
+      keys={({ id }) => id}
+      from={translateX}
+      enter={{ transform: 'translateX(0)' }}
+      leave={translateX}
+    >
+      {action => style => (
         <Flex
-          key={i}
           as="li"
-          flexDirection={m.from === 'me' ? 'row' : 'row-reverse'}
+          flexDirection={action.from === 'me' ? 'row' : 'row-reverse'}
+          style={style}
         >
           <Box mr={20}>
             <Circle background="gray" size="60px">
-              <ResponsiveImage name={m.from === 'me' ? 'avatar' : 'opponent'} />
+              <ResponsiveImage
+                name={action.from === 'me' ? 'avatar' : 'opponent'}
+              />
             </Circle>
           </Box>
 
           <Flex flexDirection="column">
             <Circle>
-              <Operation value={m.operation} />
+              <Operation value={action.operation} />
             </Circle>
 
             <TextMsg>
-              [({m.prevResult}
-              {m.operation === '0' ? '' : m.operation === '-' ? ' - 1' : ' + 1'}
-              ) / 3] = {m.result}
+              [({action.prevResult}
+              {action.operation === '0'
+                ? ''
+                : action.operation === '-'
+                ? ' - 1'
+                : ' + 1'}
+              ) / 3] = {action.result}
             </TextMsg>
           </Flex>
         </Flex>
-      ))}
+      )}
+    </Transition>
   </Flex>
 )
 
