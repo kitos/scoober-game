@@ -7,16 +7,19 @@ import { IGameStatus } from './game-container'
 import WhiteButton from '../components/white-button'
 import ResponsiveImage from '../components/responsive-image'
 
-let EndGameCover = styled.div`
+let Wrapper = styled.div`
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
   right: 0;
-  background: ${({ theme }) => theme.colors.blue};
   color: #fff;
   font-size: 64px;
   font-weight: bold;
+`
+
+let Cover = styled(Wrapper)`
+  background: ${({ theme }) => theme.colors.blue};
 `
 
 export let EndGame = ({
@@ -29,20 +32,21 @@ export let EndGame = ({
   <Transition
     items={status}
     trail={200}
-    from={{ opacity: 0, transform: 'scale(0.2)' }}
+    from={{ opacity: 0, transform: 'scale(0.0)' }}
     enter={{ opacity: 0.8, transform: 'scale(1)' }}
-    leave={{ opacity: 0, transform: 'scale(0.2)' }}
+    leave={{ opacity: 0, transform: 'scale(0.0)' }}
   >
     {s =>
       s !== 'progress' &&
       (({ opacity, transform }) => (
         <Flex
-          as={EndGameCover}
+          as={Wrapper}
           flexDirection="column"
           alignItems="center"
           justifyContent="center"
-          style={{ opacity }}
         >
+          <Cover style={{ opacity }} />
+
           <ResponsiveImage name={s} style={{ transform }} />
 
           <Box my={20} style={{ transform }}>
