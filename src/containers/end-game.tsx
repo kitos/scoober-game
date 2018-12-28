@@ -24,15 +24,17 @@ export let EndGame = ({
 }: {
   status: IGameStatus
   onReStart: () => void
-}) =>
-  status === 'progress' ? null : (
-    <Transition
-      items={status}
-      from={{ opacity: 0, transform: 'scale(0.2)' }}
-      enter={{ opacity: 0.8, transform: 'scale(1)' }}
-      leave={{ opacity: 0, transform: 'scale(0.2)' }}
-    >
-      {() => ({ opacity, transform }) => (
+}) => (
+  <Transition
+    items={status}
+    trail={200}
+    from={{ opacity: 0, transform: 'scale(0.2)' }}
+    enter={{ opacity: 0.8, transform: 'scale(1)' }}
+    leave={{ opacity: 0, transform: 'scale(0.2)' }}
+  >
+    {s =>
+      s !== 'progress' &&
+      (({ opacity, transform }) => (
         <Flex
           as={EndGameCover}
           flexDirection="column"
@@ -42,28 +44,32 @@ export let EndGame = ({
         >
           <img
             style={{ transform }}
-            src={`/img/${status}.png`}
-            srcSet={`/img/${status}.png, /img/${status}@2x.png 2x, /img/${status}@3x.png 3x`}
+            src={`/img/${s}.png`}
+            srcSet={`/img/${s}.png, /img/${s}@2x.png 2x, /img/${s}@3x.png 3x`}
           />
 
           <Box my={20} style={{ transform }}>
-            {status === 'won' ? 'You won!' : 'You lose :-('}
+            {s === 'won' ? 'You won!' : 'You lose :-('}
           </Box>
 
           <Transition
-            items={1}
-            trail={500}
+            items={status}
+            trail={status !== 'progress' ? 500 : 0}
             from={{ transform: 'translateY(300px)' }}
             enter={{ transform: 'translateY(0)' }}
             leave={{ transform: 'translateY(300px)' }}
           >
-            {() => style => (
-              <WhiteButton style={style} onClick={onReStart}>
-                New game
-              </WhiteButton>
-            )}
+            {status =>
+              status !== 'progress' &&
+              (style => (
+                <WhiteButton style={style} onClick={onReStart}>
+                  New game
+                </WhiteButton>
+              ))
+            }
           </Transition>
         </Flex>
-      )}
-    </Transition>
-  )
+      ))
+    }
+  </Transition>
+)
