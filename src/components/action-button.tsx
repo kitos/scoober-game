@@ -1,5 +1,5 @@
 import * as React from 'react'
-import styled, {StyledComponentProps} from 'styled-components'
+import styled, { StyledComponentProps } from 'styled-components'
 
 import Circle from './circle'
 
@@ -12,7 +12,22 @@ let Button = styled.button`
 
   &:hover,
   &:focus {
-    border-color: green;
+    border-color: ${({ theme }) => theme.colors.darkBlue};
+    box-shadow: ${({ theme }) => theme.colors.lightGray} 1px 3px 5px;
+  }
+
+  &:active {
+    border-color: ${({ theme }) => theme.colors.blue};
+    box-shadow: none;
+  }
+
+  &:disabled {
+    border-color: transparent;
+    box-shadow: none;
+
+    ${Circle} {
+      background: ${({ theme }) => theme.colors.lightGray};
+    }
   }
 `
 

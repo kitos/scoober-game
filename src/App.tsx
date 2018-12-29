@@ -5,7 +5,10 @@ import { Box, Flex } from '@rebass/grid'
 import GameContainer from './containers/game-container'
 
 let colors = {
-  blue: '#65A9D8'
+  blue: '#65A9D8',
+  darkBlue: '#5189B7',
+  lightGray: '#e2e2e2',
+  gray: 'gray'
 }
 
 let theme = { colors }

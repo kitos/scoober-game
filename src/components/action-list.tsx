@@ -11,7 +11,7 @@ import ResponsiveImage from './responsive-image'
 
 let TextMsg = styled.div`
   background: #fff;
-  box-shadow: #e2e2e2 2px 2px 10px;
+  box-shadow: ${({ theme }) => theme.colors.lightGray} 2px 2px 10px;
   padding: 10px 20px;
   margin: 5px 0;
   width: 100%;
