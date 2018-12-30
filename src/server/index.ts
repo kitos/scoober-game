@@ -35,11 +35,16 @@ io.on('connection', socket => {
       ...action,
       from: 'me'
     })
-    socket.emit('step', {
-      operation: pickRandom(['+', '-']),
-      value: pickRandom([1, 0]),
-      from: 'opponent'
-    })
+
+    setTimeout(
+      () =>
+        socket.emit('step', {
+          operation: pickRandom(['+', '-']),
+          value: pickRandom([1, 0]),
+          from: 'opponent'
+        }),
+      1000
+    )
   })
 
   socket.on('disconnect', () => {
