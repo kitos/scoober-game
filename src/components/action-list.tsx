@@ -5,7 +5,6 @@ import { Box, Flex } from '@rebass/grid'
 import { Transition } from 'react-spring'
 
 import { calculateResult, IGameAction } from '../containers/game-container'
-import Operation from './operation'
 import Circle from './circle'
 import ResponsiveImage from './responsive-image'
 
@@ -21,13 +20,7 @@ let translateX = ({ from }: IGameAction): object => ({
   transform: `translateX(${from === 'me' ? '-100%' : '100%'})`
 })
 
-let ActionList = ({
-  actions,
-  seed
-}: {
-  actions: IGameAction[]
-  seed: number
-}) => {
+let ActionList = ({ actions }: { actions: IGameAction[] }) => {
   let lastActionRef = useRef<HTMLDivElement>(null)
 
   return (
@@ -44,8 +37,10 @@ let ActionList = ({
         items={actions.map((a, i) => ({
           ...a,
           id: i,
-          prevResult: calculateResult(seed, actions.slice(0, i)),
-          result: calculateResult(seed, actions.slice(0, i + 1)),
+          prevResult: i
+            ? calculateResult(actions.slice(0, i))
+            : actions[0].value,
+          result: calculateResult(actions.slice(0, i + 1)),
           isLast: i === actions.length - 1
         }))}
         keys={({ id }) => id}
@@ -79,12 +74,12 @@ let ActionList = ({
               mb={20}
             >
               <Box as={Circle} mb={10}>
-                <Operation value={action.operation} />
+                {action.value ? action.operation + action.value : '0'}
               </Box>
 
               <TextMsg>
                 [({action.prevResult}
-                {action.operation === '0'
+                {action.value === 0
                   ? ''
                   : action.operation === '-'
                   ? ' - 1'

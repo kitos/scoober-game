@@ -1,68 +1,59 @@
 import * as React from 'react'
-import { useReducer } from 'react'
+import { useEffect, useReducer, useState } from 'react'
 import { Box, Flex } from '@rebass/grid'
 import { last } from 'ramda'
+import io from 'socket.io-client'
 
 import ActionButton from '../components/action-button'
-import Operation from '../components/operation'
 import ActionList from '../components/action-list'
 import { EndGame } from './end-game'
 
-export type IOperation = '-' | '0' | '+'
+export type IOperation = '-' | '+'
 type Issuer = 'me' | 'opponent'
-
-let operations: IOperation[] = ['-', '0', '+']
 
 export type IGameAction = {
   from: Issuer
   operation: IOperation
+  value: number
 }
 
 export type IGameStatus = 'progress' | 'won' | 'lose'
 
 type IState = {
-  seed: number
   actions: IGameAction[]
   status: IGameStatus
 }
 
 type IAction = { type: 'step'; payload: IGameAction } | { type: 'start' }
 
-export let applyOperation = (a: IOperation, seed: number) => {
-  switch (a) {
-    case '-':
-      seed--
-      break
-    case '+':
-      seed++
-  }
+export let applyOperation = (o: IOperation, a: number, b: number) =>
+  Math.round((o === '+' ? a + b : a - b) / 3)
 
-  return Math.round(seed / 3)
-}
-
-export let calculateResult = (seed: number, actions: IGameAction[]) =>
-  actions.reduce((res, m) => applyOperation(m.operation, res), seed)
+export let calculateResult = (actions: IGameAction[]) =>
+  actions.reduce(
+    (res, action) => applyOperation(action.operation, res, action.value),
+    0
+  )
 
 let reducer = (state: IState, action: IAction): IState => {
   switch (action.type) {
     case 'start':
       return {
-        actions: [{ from: 'opponent', operation: '0' }],
-        seed: Math.round(100 + Math.random() * 100),
+        actions: [],
         status: 'progress'
       }
     case 'step':
-      let { seed, actions } = state
-      let result = calculateResult(seed, actions)
+      let { actions } = state
+      let result = calculateResult(actions)
       let lastAction = last(actions)
       let newAction = action.payload
 
-      if (result <= 1 || (lastAction && lastAction.from === newAction.from)) {
+      if (lastAction && (lastAction.from === newAction.from || result <= 1)) {
         return state
       }
 
       actions = [...state.actions, newAction]
-      result = calculateResult(state.seed, actions)
+      result = calculateResult(actions)
 
       let status: IGameStatus =
         result <= 1 ? (newAction.from === 'me' ? 'won' : 'lose') : 'progress'
@@ -77,13 +68,40 @@ let reducer = (state: IState, action: IAction): IState => {
   }
 }
 
-let GameContainer = ({ className }: { className: string }) => {
-  let [{ seed, status, actions }, dispatch] = useReducer(
-    reducer,
-    {} as IState,
-    { type: 'start' }
+let useSocket = () => {
+  let [socket] = useState(() => io('http://localhost'))
+
+  socket.on('connect', () => console.log('Connected to server!'))
+
+  useEffect(
+    () => () => {
+      socket.disconnect()
+      console.log('Disconnected from server.')
+    },
+    []
   )
+
+  return socket
+}
+
+let GameContainer = ({ className }: { className: string }) => {
+  let [{ status, actions }, dispatch] = useReducer(reducer, {
+    actions: [],
+    status: 'progress'
+  })
   let lastOperation = last(actions)
+  let socket = useSocket()
+
+  useEffect(() => {
+    socket.on('step', (a: IGameAction) =>
+      dispatch({
+        type: 'step',
+        payload: a
+      })
+    )
+
+    return () => socket.off('step')
+  }, [])
 
   return (
     <Flex
@@ -101,40 +119,30 @@ let GameContainer = ({ className }: { className: string }) => {
           overflow-x: hidden;
         `}
       >
-        <ActionList {...{ actions, seed }} />
+        <ActionList actions={actions} />
       </Box>
 
-      <EndGame status={status} onReStart={() => dispatch({ type: 'start' })} />
+      <EndGame
+        status={status}
+        onReStart={() => {
+          dispatch({ type: 'start' })
+          socket.emit('start')
+        }}
+      />
 
       {status === 'progress' && (
         <Flex justifyContent="space-between">
-          {operations.map(o => (
+          {[
+            { operation: '-', value: 1 },
+            { operation: '+', value: 0 },
+            { operation: '+', value: 1 }
+          ].map(o => (
             <ActionButton
-              key={o}
+              key={o.value ? o.operation + o.value : '0'}
               disabled={!lastOperation || lastOperation.from === 'me'}
-              onClick={() => {
-                dispatch({
-                  type: 'step',
-                  payload: { from: 'me', operation: o }
-                })
-
-                setTimeout(
-                  () =>
-                    dispatch({
-                      type: 'step',
-                      payload: {
-                        from: 'opponent',
-                        operation:
-                          operations[
-                            Math.floor(Math.random() * operations.length)
-                          ]
-                      }
-                    }),
-                  1000
-                )
-              }}
+              onClick={() => socket.emit('step', o)}
             >
-              <Operation value={o} />
+              {o.value ? o.operation + o.value : '0'}
             </ActionButton>
           ))}
         </Flex>
