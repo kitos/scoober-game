@@ -69,7 +69,7 @@ let reducer = (state: IState, action: IAction): IState => {
 }
 
 let useSocket = () => {
-  let [socket] = useState(() => io('http://localhost'))
+  let [socket] = useState(() => io('http://localhost:8080'))
 
   socket.on('connect', () => console.log('Connected to server!'))
 
