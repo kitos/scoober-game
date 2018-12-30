@@ -47,4 +47,6 @@ io.on('connection', socket => {
   })
 })
 
-server.listen(8080, () => console.log('server started'))
+const { PORT = 8080 } = process.env
+
+server.listen(PORT, () => console.log('server started'))

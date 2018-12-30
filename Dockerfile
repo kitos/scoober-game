@@ -14,6 +14,4 @@ RUN npm run build
 RUN rm -rf node_modules
 RUN npm ci --production
 
-EXPOSE 8080
-
 CMD ["npm", "start"]
