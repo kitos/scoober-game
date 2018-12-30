@@ -44,16 +44,10 @@ let reducer = (state: IState, action: IAction): IState => {
       }
     case 'step':
       let { actions } = state
-      let result = calculateResult(actions)
-      let lastAction = last(actions)
       let newAction = action.payload
 
-      if (lastAction && (lastAction.from === newAction.from || result <= 1)) {
-        return state
-      }
-
       actions = [...state.actions, newAction]
-      result = calculateResult(actions)
+      let result = calculateResult(actions)
 
       let status: IGameStatus =
         result <= 1 ? (newAction.from === 'me' ? 'won' : 'lose') : 'progress'
@@ -93,10 +87,15 @@ let GameContainer = ({ className }: { className: string }) => {
   let socket = useSocket()
 
   useEffect(() => {
+    socket.on('start', () => dispatch({ type: 'start' }))
+
     socket.on('step', (a: IGameAction) =>
       dispatch({
         type: 'step',
-        payload: a
+        payload: {
+          ...a,
+          from: a.from === socket.id ? 'me' : 'opponent'
+        }
       })
     )
 
@@ -122,13 +121,7 @@ let GameContainer = ({ className }: { className: string }) => {
         <ActionList actions={actions} />
       </Box>
 
-      <EndGame
-        status={status}
-        onReStart={() => {
-          dispatch({ type: 'start' })
-          socket.emit('start')
-        }}
-      />
+      <EndGame status={status} onReStart={() => socket.emit('start')} />
 
       {status === 'progress' && (
         <Flex justifyContent="space-between">
@@ -139,7 +132,7 @@ let GameContainer = ({ className }: { className: string }) => {
           ].map(o => (
             <ActionButton
               key={o.value ? o.operation + o.value : '0'}
-              disabled={!lastOperation || lastOperation.from === 'me'}
+              disabled={lastOperation && lastOperation.from === 'me'}
               onClick={() => socket.emit('step', o)}
             >
               {o.value ? o.operation + o.value : '0'}
