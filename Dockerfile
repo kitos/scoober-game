@@ -16,4 +16,4 @@ RUN npm ci --production
 
 EXPOSE 8080
 
-ENTRYPOINT npm start
+CMD ["npm", "start"]
