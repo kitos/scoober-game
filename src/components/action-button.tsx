@@ -19,6 +19,8 @@ let Button = styled.button`
   &:active {
     border-color: ${({ theme }) => theme.colors.blue};
     box-shadow: none;
+    position: relative;
+    top: 2px;
   }
 
   &:disabled {
