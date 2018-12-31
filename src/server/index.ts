@@ -22,6 +22,29 @@ type IGameAction = {
 let users = new Set<string>()
 let actions: IGameAction[] = []
 
+export let applyOperation = (o: IOperation, a: number, b: number) =>
+  Math.round((o === '+' ? a + b : a - b) / 3)
+
+export let calculateResult = (actions: IGameAction[]) =>
+  actions.reduce(
+    (res, action) => applyOperation(action.operation, res, action.value),
+    0
+  )
+
+let performAction = (action: IGameAction) => {
+  let lastAction = actions[actions.length - 1]
+
+  if (
+    lastAction &&
+    (lastAction.from === action.from || calculateResult(actions) <= 1)
+  ) {
+    return
+  }
+
+  io.emit('step', action)
+  actions.push(action)
+}
+
 io.on('connection', socket => {
   let clientId = socket.id
 
@@ -38,39 +61,27 @@ io.on('connection', socket => {
 
     socket.on('step', (action: IGameAction) => {
       let isFirstAction = actions.length === 0
-      let lastAction = actions[actions.length - 1]
 
-      // prohibit perform 2 actions in a row
-      if (lastAction && lastAction.from === clientId) {
-        return
-      }
-
-      action = {
+      performAction({
         ...action,
         operation: isFirstAction ? '+' : action.operation,
         value: isFirstAction
           ? Math.floor(Math.random() * 100) + 50
           : action.value,
         from: clientId
-      }
-
-      io.emit('step', action)
-
-      actions.push(action)
+      })
 
       // add "bot" for single player
       if (users.size < 2) {
-        setTimeout(() => {
-          let action = {
-            operation: pickRandom(['+', '-']),
-            value: pickRandom([1, 0]),
-            from: 'opponent'
-          }
-
-          actions.push(action)
-
-          io.emit('step', action)
-        }, 1000)
+        setTimeout(
+          () =>
+            performAction({
+              operation: pickRandom(['+', '-']),
+              value: pickRandom([1, 0]),
+              from: 'opponent'
+            }),
+          1000
+        )
       }
     })
   }
