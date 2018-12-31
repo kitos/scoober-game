@@ -35,7 +35,7 @@ export let calculateResult = (actions: IGameAction[]) =>
     0
   )
 
-let reducer = (state: IState, action: IAction): IState => {
+export let reducer = (state: IState, action: IAction): IState => {
   switch (action.type) {
     case 'start':
       return {
